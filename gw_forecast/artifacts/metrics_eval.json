@@ -1,0 +1,97 @@
+{
+ "best_epoch": 5,
+ "y_scale_m": 3.5853307828949377,
+ "val": {
+  "n": 55882,
+  "h20-59d": {
+   "n": 7094,
+   "MAE_model_m": 0.903,
+   "MAE_persistence_m": 1.473,
+   "MAE_well_seasonal_climatology_m": 1.177,
+   "P10_P90_coverage": 0.808
+  },
+  "h60-99d": {
+   "n": 10145,
+   "MAE_model_m": 0.901,
+   "MAE_persistence_m": 1.533,
+   "MAE_well_seasonal_climatology_m": 1.161,
+   "P10_P90_coverage": 0.834
+  },
+  "h100-139d": {
+   "n": 25202,
+   "MAE_model_m": 1.329,
+   "MAE_persistence_m": 3.686,
+   "MAE_well_seasonal_climatology_m": 1.916,
+   "P10_P90_coverage": 0.782
+  },
+  "h140-200d": {
+   "n": 13441,
+   "MAE_model_m": 1.357,
+   "MAE_persistence_m": 3.972,
+   "MAE_well_seasonal_climatology_m": 1.94,
+   "P10_P90_coverage": 0.783
+  }
+ },
+ "test_seen": {
+  "n": 88625,
+  "h20-59d": {
+   "n": 12385,
+   "MAE_model_m": 0.888,
+   "MAE_persistence_m": 1.577,
+   "MAE_well_seasonal_climatology_m": 1.17,
+   "P10_P90_coverage": 0.797
+  },
+  "h60-99d": {
+   "n": 16685,
+   "MAE_model_m": 0.874,
+   "MAE_persistence_m": 1.633,
+   "MAE_well_seasonal_climatology_m": 1.218,
+   "P10_P90_coverage": 0.82
+  },
+  "h100-139d": {
+   "n": 34067,
+   "MAE_model_m": 1.055,
+   "MAE_persistence_m": 3.62,
+   "MAE_well_seasonal_climatology_m": 1.811,
+   "P10_P90_coverage": 0.837
+  },
+  "h140-200d": {
+   "n": 25488,
+   "MAE_model_m": 1.094,
+   "MAE_persistence_m": 3.924,
+   "MAE_well_seasonal_climatology_m": 1.912,
+   "P10_P90_coverage": 0.827
+  }
+ },
+ "test_unseen_wells": {
+  "n": 9284,
+  "h20-59d": {
+   "n": 1300,
+   "MAE_model_m": 0.876,
+   "MAE_persistence_m": 1.53,
+   "MAE_well_seasonal_climatology_m": 1.073,
+   "P10_P90_coverage": 0.803
+  },
+  "h60-99d": {
+   "n": 1733,
+   "MAE_model_m": 0.826,
+   "MAE_persistence_m": 1.605,
+   "MAE_well_seasonal_climatology_m": 1.146,
+   "P10_P90_coverage": 0.845
+  },
+  "h100-139d": {
+   "n": 3587,
+   "MAE_model_m": 1.032,
+   "MAE_persistence_m": 3.593,
+   "MAE_well_seasonal_climatology_m": 1.886,
+   "P10_P90_coverage": 0.842
+  },
+  "h140-200d": {
+   "n": 2664,
+   "MAE_model_m": 1.069,
+   "MAE_persistence_m": 3.98,
+   "MAE_well_seasonal_climatology_m": 1.948,
+   "P10_P90_coverage": 0.83
+  }
+ }
+}

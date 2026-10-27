@@ -1,0 +1,8 @@
+torch>=2.1
+pandas>=2.0
+numpy>=1.24
+pyarrow>=14
+fastapi>=0.110
+uvicorn>=0.27
+httpx>=0.27
+openpyxl>=3.1

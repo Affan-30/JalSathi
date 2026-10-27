@@ -1,0 +1,37 @@
+{
+ "n_windows": 42855,
+ "stations": 1280,
+ "+30d": {
+  "n": 15665,
+  "MAE_model_m": 1.002,
+  "MAE_persistence_m": 0.598,
+  "P10_P90_coverage": 0.496,
+  "subset_with_last_year_analog": {
+   "n": 9514,
+   "MAE_model_m": 0.962,
+   "MAE_last_year_analog_m": 0.904
+  }
+ },
+ "+60d": {
+  "n": 14317,
+  "MAE_model_m": 1.186,
+  "MAE_persistence_m": 0.846,
+  "P10_P90_coverage": 0.432,
+  "subset_with_last_year_analog": {
+   "n": 8406,
+   "MAE_model_m": 1.122,
+   "MAE_last_year_analog_m": 1.176
+  }
+ },
+ "+90d": {
+  "n": 12873,
+  "MAE_model_m": 1.343,
+  "MAE_persistence_m": 1.05,
+  "P10_P90_coverage": 0.395,
+  "subset_with_last_year_analog": {
+   "n": 7317,
+   "MAE_model_m": 1.277,
+   "MAE_last_year_analog_m": 1.402
+  }
+ }
+}
