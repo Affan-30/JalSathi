@@ -1,4 +1,6 @@
+
 import "dotenv/config";
+import axios from "axios";
 
 const TOKEN_URL =
   process.env.IMD_TOKEN_URL ??
@@ -25,28 +27,43 @@ function validateConfig() {
 async function generateToken() {
   validateConfig();
 
-  const response = await fetch(TOKEN_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({
-      email: EMAIL,
-      password: PASSWORD,
-    }),
-    signal: AbortSignal.timeout(10000),
-  });
+  let response;
 
-  if (!response.ok) {
+  try {
+    response = await axios.post(
+      TOKEN_URL,
+      {
+        email: EMAIL,
+        password: PASSWORD,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        timeout: 10000,
+        maxRedirects: 0,
+        validateStatus: (status) => status >= 200 && status < 300,
+      }
+    );
+  } catch (error) {
+    console.error(
+      "IMD token generation failed:",
+      error.response?.status ?? error.message
+    );
+
     throw new Error(
-      `IMD token generation failed: HTTP ${response.status}`
+      `IMD token generation failed${
+        error.response
+          ? `: HTTP ${error.response.status}`
+          : ""
+      }`
     );
   }
 
-  const result = await response.json();
+  const result = response.data;
 
-  if (!result.access_token) {
+  if (!result?.access_token) {
     throw new Error("IMD response did not contain access_token");
   }
 
@@ -54,7 +71,9 @@ async function generateToken() {
 
   // Renew 60 seconds before the advertised expiry.
   const expiresIn = Number(result.expires_in) || 3600;
-  tokenExpiresAt = Date.now() + Math.max(0, expiresIn - 60) * 1000;
+
+  tokenExpiresAt =
+    Date.now() + Math.max(0, expiresIn - 60) * 1000;
 
   return cachedToken;
 }
@@ -79,6 +98,7 @@ export async function fetchIMD(endpoint, params = {}) {
 
   // Pass a documented endpoint path, not a user-supplied full URL.
   const cleanEndpoint = endpoint.replace(/^\/+/, "");
+
   const url = new URL(
     `${BASE_URL.replace(/\/+$/, "")}/${cleanEndpoint}`
   );
@@ -92,55 +112,61 @@ export async function fetchIMD(endpoint, params = {}) {
   for (let attempt = 0; attempt < 2; attempt++) {
     const token = await getToken();
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "X-API-KEY": API_KEY,
-        Authorization: `Bearer ${token}`,
-      },
-      signal: AbortSignal.timeout(15000),
-    });
+    let response;
 
-    if (response.status === 401 && attempt === 0) {
-      // Discard the rejected token and obtain a new one.
-      cachedToken = null;
-      tokenExpiresAt = 0;
-      continue;
+    try {
+      response = await axios.get(url.toString(), {
+        headers: {
+          Accept: "application/json",
+          "X-API-KEY": API_KEY,
+          Authorization: `Bearer ${token}`,
+        },
+        timeout: 15000,
+        maxRedirects: 0,
+        validateStatus: (status) => status >= 200 && status < 300,
+        responseType: "text",
+        transformResponse: [(data) => data],
+      });
+    } catch (error) {
+      const status = error.response?.status;
+
+      if (status === 401 && attempt === 0) {
+        // Discard the rejected token and obtain a new one.
+        cachedToken = null;
+        tokenExpiresAt = 0;
+        continue;
+      }
+
+      if (error.response) {
+        console.error("IMD URL:", url.toString());
+        console.error("IMD HTTP status:", status);
+        console.error("IMD response body:", error.response.data);
+
+        throw new Error(`IMD API returned HTTP ${status}`);
+      }
+
+      console.error("IMD request failed:", error.message);
+
+      throw new Error(`IMD API request failed: ${error.message}`);
     }
 
-    if (!response.ok) {
-        const details = await response.text();
+    const contentType =
+      response.headers["content-type"] || "";
 
-  console.error("IMD URL:", url.toString());
-  console.error("IMD HTTP status:", response.status);
-  console.error("IMD response body:", details);
+    const body = response.data;
 
-      throw new Error(`IMD API returned HTTP ${response.status}`);
+    if (!contentType.toLowerCase().includes("application/json")) {
+      console.error("Unexpected IMD content type:", contentType);
+      console.error("IMD response body:", body);
+
+      throw new Error("IMD returned a non-JSON response");
     }
 
-    const contentType = response.headers.get("content-type") || "";
-const body = await response.text();
-
-if (!response.ok) {
-  console.error("IMD HTTP status:", response.status);
-  console.error("IMD response body:", body);
-
-  throw new Error(`IMD API returned HTTP ${response.status}`);
-}
-
-if (!contentType.includes("application/json")) {
-  console.error("Unexpected IMD content type:", contentType);
-  console.error("IMD response body:", body);
-
-  throw new Error("IMD returned a non-JSON response");
-}
-
-try {
-  return JSON.parse(body);
-} catch {
-  throw new Error("IMD returned invalid JSON");
-}
+    try {
+      return JSON.parse(body);
+    } catch {
+      throw new Error("IMD returned invalid JSON");
+    }
   }
 
   throw new Error("IMD authentication failed after token renewal");

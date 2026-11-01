@@ -1,4 +1,6 @@
 
+import axios from "axios";
+
 const MODEL_BASE_URL = process.env.GROUNDWATER_MODEL_URL;
 
 export async function sendForecastRequest(payload) {
@@ -9,32 +11,44 @@ export async function sendForecastRequest(payload) {
   const baseUrl = MODEL_BASE_URL.replace(/\/+$/, "");
   const url = new URL("/v1/forecast", baseUrl);
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(60000),
-  });
+  let response;
 
-  const responseText = await response.text();
-
-  if (!response.ok) {
-    console.error(
-      "Python model HTTP status:",
-      response.status,
-      responseText.slice(0, 1000)
+  try {
+    response = await axios.post(
+      url.toString(),
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        timeout: 60000,
+        maxRedirects: 0,
+        validateStatus: (status) => status >= 200 && status < 300,
+        responseType: "text",
+        transformResponse: [(data) => data],
+      }
     );
+  } catch (error) {
+    if (error.response) {
+      console.error(
+        "Python model HTTP status:",
+        error.response.status,
+        String(error.response.data).slice(0, 1000)
+      );
+
+      throw new Error(
+        `Python model returned HTTP ${error.response.status}`
+      );
+    }
 
     throw new Error(
-      `Python model returned HTTP ${response.status}`
+      `Python model request failed: ${error.message}`
     );
   }
 
   try {
-    return JSON.parse(responseText);
+    return JSON.parse(response.data);
   } catch {
     throw new Error("Python model returned invalid JSON");
   }
